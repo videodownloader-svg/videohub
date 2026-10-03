@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>VideoDL Pro — Mahedi Hassan Anik</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  [x-cloak]{display:none!important}
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:#0F172A;color:#F8FAFC;font-family:system-ui,-apple-system,sans-serif;margin:0;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+  .card{background:rgba(30,41,59,.8);border:1px solid rgba(255,255,255,.05);backdrop-filter:blur(12px)}
+  .rc{border:2px solid transparent;cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1);position:relative}
+  .rc:hover:not(.done){transform:translateY(-2px);border-color:rgba(59,130,246,.4);box-shadow:0 8px 20px rgba(59,130,246,.15)}
+  .rc.a{border-color:#3b82f6;background:rgba(59,130,246,.15);box-shadow:0 0 0 3px rgba(59,130,246,.2)}
+  .rc.done{cursor:not-allowed;opacity:.55;background:rgba(16,185,129,.05);border-color:rgba(16,185,129,.3)}
+  .rc.done::after{content:'\f00c';font-family:'Font Awesome 6 Free';font-weight:900;position:absolute;top:5px;right:5px;color:#10b981;font-size:.65rem;background:rgba(16,185,129,.15);padding:.1rem .25rem;border-radius:.25rem}
+  .pb{transition:width .3s ease;background:linear-gradient(90deg,#3b82f6,#8b5cf6);position:relative;overflow:hidden}
+  .pb::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);animation:shimmer 2s infinite}
+  @keyframes shimmer{0%{left:-100%}100%{left:100%}}
+  .sc{scroll-margin-top:80px}
+  .truncate-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  @keyframes fadeInUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,.4)}50%{box-shadow:0 0 0 10px rgba(59,130,246,0)}}
+  @keyframes pasteFlash{0%,100%{background:rgba(15,23,42,1);border-color:#334155}50%{background:rgba(16,185,129,.15);border-color:#10b981}}
+  .anim-fade-up{animation:fadeInUp .4s cubic-bezier(.4,0,.2,1) forwards}
+  .anim-fade{animation:fadeIn .4s ease-out forwards}
+  .anim-spin{animation:spin 1s linear infinite}
+  .anim-pulse{animation:pulseGlow 2s infinite}
+  .paste-flash{animation:pasteFlash .8s ease}
+  .btn{position:relative;overflow:hidden;border:none;cursor:pointer;font-weight:600;transition:all .2s cubic-bezier(.4,0,.2,1);display:inline-flex;align-items:center;justify-content:center;gap:.4rem;border-radius:.6rem;letter-spacing:.01em;white-space:nowrap}
+  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+  .btn::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.08),transparent);opacity:0;transition:opacity .2s}
+  .btn:hover:not(:disabled)::before{opacity:1}
+  .btn:active:not(:disabled){transform:scale(.97)}
+  .btn-primary{background:linear-gradient(135deg,#2563eb,#4f46e5);color:white;box-shadow:0 3px 12px rgba(37,99,235,.3)}
+  .btn-primary:hover:not(:disabled){box-shadow:0 5px 16px rgba(37,99,235,.45);transform:translateY(-1px)}
+  .btn-secondary{background:#1E293B;color:#F8FAFC;border:1px solid #334155}
+  .btn-secondary:hover:not(:disabled){background:#334155;border-color:#475569}
+  .btn-danger{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2)}
+  .input{width:100%;background:#0F172A;border:1px solid #334155;color:white;border-radius:.7rem;outline:none;transition:all .3s;padding:.75rem 5rem .75rem .9rem;font-size:13px;caret-color:#3b82f6}
+  .input:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+  .input::placeholder{color:#64748b}
+  .input.paste-success{border-color:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.2)}
+  .paste-status{position:absolute;right:2.5rem;top:50%;transform:translateY(-50%);font-size:9px;font-weight:600;transition:opacity .3s}
+  .icon-box{width:2rem;height:2rem;border-radius:.5rem;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#3b82f6,#4f46e5);color:white;font-size:.85rem}
+  .icon-video{width:2rem;height:2rem;border-radius:.5rem;display:flex;align-items:center;justify-content:center;background:rgba(59,130,246,.1);color:#60a5fa;transition:all .3s;flex-shrink:0}
+  .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(100px);background:#1E293B;border:1px solid #334155;color:#F8FAFC;padding:.65rem 1rem;border-radius:.6rem;font-size:.75rem;box-shadow:0 10px 30px rgba(0,0,0,.5);transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:100;display:flex;align-items:center;gap:.5rem;max-width:90vw}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  .star-btn{background:none;border:none;cursor:pointer;padding:.15rem;transition:transform .2s;color:#475569;font-size:1.5rem}
+  .star-btn:hover:not(:disabled){transform:scale(1.15)}
+  .star-btn.active{color:#fbbf24}
+  .star-btn:disabled{cursor:default}
+  .star-btn.readonly{cursor:default}
+  .rating-bar{height:6px;background:#334155;border-radius:3px;overflow:hidden}
+  .rating-bar-fill{height:100%;background:linear-gradient(90deg,#fbbf24,#f59e0b);transition:width .5s ease}
+  .secure-badge{display:inline-flex;align-items:center;gap:.3rem;font-size:.6rem;padding:.15rem .4rem;border-radius:.3rem;background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.25)}
+</style>
+</head>
+<body style="min-height:100vh;display:flex;flex-direction:column">
+
+<header class="sticky top-0 z-50 card anim-fade" style="border-bottom:1px solid #334155">
+  <div class="max-w-5xl mx-auto px-3 py-2.5 flex justify-between items-center">
+    <div class="flex items-center gap-2">
+      <div class="icon-box"><i class="fa-solid fa-film"></i></div>
+      <span class="font-bold text-sm md:text-base tracking-tight">VideoDL Pro</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <span id="secure-badge" class="secure-badge" style="display:none">
+        <i class="fa-solid fa-lock text-[8px]"></i> Secure
+      </span>
+      <span class="text-[9px] md:text-[10px] px-2 py-1 rounded-full text-blue-400 font-medium flex items-center gap-1" style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2)">
+        <i class="fa-solid fa-bolt text-[8px]"></i> 16K Ultra HD
+      </span>
+    </div>
+  </div>
+</header>
+
+<main class="flex-1 max-w-3xl mx-auto w-full px-3 md:px-6 py-5 md:py-8">
+  <div class="text-center mb-6 md:mb-10 anim-fade-up">
+    <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] md:text-xs mb-3" style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);color:#60a5fa">
+      <i class="fa-solid fa-wand-magic-sparkles text-[9px]"></i>
+      Smart Analyzer + Duplicate Detection
+    </div>
+    <h1 class="text-xl md:text-4xl font-extrabold mb-2 leading-tight">
+      Download Videos <br class="hidden md:block">
+      <span style="background:linear-gradient(90deg,#60a5fa,#6366f1);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Intelligently.</span>
+    </h1>
+    <p class="text-[11px] md:text-sm max-w-md mx-auto" style="color:#94A3B8">Already downloaded resolutions are auto-detected. No wasted storage.</p>
+  </div>
+
+  <div x-data="dl()" x-cloak class="card rounded-2xl p-4 md:p-6 anim-fade-up" style="box-shadow:0 20px 40px rgba(0,0,0,.5)">
+    <div class="mb-3">
+      <label class="block text-[10px] md:text-xs font-semibold mb-1.5 uppercase tracking-wider flex items-center gap-1.5" style="color:#94A3B8">
+        <i class="fa-solid fa-link text-blue-400 text-[10px]"></i> Video URL
+      </label>
+      <div class="relative">
+        <input x-ref="urlInput" x-model="url" @input="reset()" @paste="onPaste($event)" @focus="onTap()" @click="onTap()" type="url" placeholder="Tap here — URL will paste automatically" class="input" :class="{'paste-success': pasteSuccess}">
+        <span x-show="pasteStatus" class="paste-status" :style="pasteStatusColor" x-text="pasteStatus"></span>
+        <button @click="copyClipboard()" type="button" title="Paste from clipboard" class="absolute right-2 top-1/2 -translate-y-1/2 h-7 px-2 rounded-md flex items-center justify-center gap-1 transition text-[10px] font-semibold" style="background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.25);cursor:pointer" onmouseover="this.style.background='rgba(59,130,246,.3)'" onmouseout="this.style.background='rgba(59,130,246,.15)'">
+          <i class="fa-solid fa-paste text-[10px]"></i>
+        </button>
+      </div>
+      <p x-show="hint" class="text-[10px] mt-1.5 flex items-center gap-1.5" :style="hintColor" x-transition>
+        <i class="fa-solid fa-circle-info text-[9px]"></i>
+        <span x-text="hint"></span>
+      </p>
+    </div>
+
+    <button x-show="!info" @click="fetchInfo()" :disabled="loading || !url" class="btn btn-primary w-full py-2.5 md:py-3 text-[13px] md:text-sm mt-3">
+      <template x-if="!fetching"><span class="flex items-center gap-1.5"><i class="fa-solid fa-magnifying-glass text-xs"></i> Analyze Video</span></template>
+      <template x-if="fetching"><span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-notch anim-spin text-xs"></i> Analyzing...</span></template>
+    </button>
+
+    <div x-show="err" x-transition class="mt-3 p-2.5 rounded-lg text-red-400 text-[11px] flex items-start gap-2" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2)">
+      <i class="fa-solid fa-circle-exclamation mt-0.5 flex-shrink-0 text-[11px]"></i>
+      <span x-text="err"></span>
+    </div>
+
+    <div id="res" x-show="info" x-transition class="mt-5 md:mt-6 sc anim-fade-up">
+      <div class="flex gap-3 mb-5 p-3 rounded-xl" style="background:rgba(15,23,42,.5);border:1px solid #334155">
+        <div class="relative w-28 h-20 sm:w-32 sm:h-20 flex-shrink-0 rounded-lg overflow-hidden" style="background:#0F172A">
+          <div x-show="thumbLoading" class="absolute inset-0 flex items-center justify-center" style="color:#475569"><i class="fa-solid fa-circle-notch anim-spin text-lg"></i></div>
+          <img x-show="!thumbLoading && !thumbFailed" :src="currentThumb" @load="thumbLoading=false" @error="tryNextThumb()" class="w-full h-full object-cover absolute inset-0">
+          <div x-show="!thumbLoading && thumbFailed" class="absolute inset-0 flex flex-col items-center justify-center gap-1" style="color:#475569">
+            <i class="fa-solid fa-video text-2xl"></i>
+            <span class="text-[8px]">No Preview</span>
+          </div>
+        </div>
+        <div class="flex-1 min-w-0 flex flex-col justify-center">
+          <h3 class="text-[12px] md:text-sm font-semibold truncate-text" x-text="info.title"></h3>
+          <p class="text-[10px] md:text-xs mt-1.5 flex items-center gap-1.5" style="color:#94A3B8"><i class="fa-regular fa-clock text-[10px]"></i><span x-text="info.duration"></span></p>
+        </div>
+      </div>
+
+      <label class="block text-[10px] md:text-xs font-semibold mb-2.5 uppercase tracking-wider flex items-center gap-1.5" style="color:#94A3B8">
+        <i class="fa-solid fa-layer-group text-blue-400 text-[10px]"></i> Available Resolutions
+        <span class="ml-auto text-[9px] px-1.5 py-0.5 rounded-full" style="background:rgba(16,185,129,.15);color:#10b981" x-show="info.formats.some(f => f.downloaded)"><i class="fa-solid fa-check text-[8px]"></i> Downloaded</span>
+      </label>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+        <template x-for="(f, idx) in info.formats" :key="f.value">
+          <div @click="!f.downloaded && (sel = f.value)" :class="{'a': sel === f.value && !f.downloaded, 'done': f.downloaded}" class="rc rounded-lg p-2.5 md:p-3 text-center anim-fade-up" :style="'animation-delay:' + (idx * 0.04) + 's;opacity:0;animation-fill-mode:forwards'" style="background:#1E293B">
+            <div class="flex items-center justify-center gap-1 mb-0.5">
+              <i class="fa-solid text-[10px]" :class="f.value === 'audio' ? 'fa-music' : (f.downloaded ? 'fa-circle-check' : 'fa-video')"></i>
+              <span class="text-[12px] md:text-sm font-bold" x-text="f.label"></span>
+            </div>
+            <div class="text-[9px] md:text-[10px]" :style="f.downloaded ? 'color:#10b981' : 'color:#94A3B8'" x-text="f.downloaded ? 'Downloaded' : f.size"></div>
+          </div>
+        </template>
+      </div>
+
+      <button @click="start()" :disabled="loading || !sel" class="btn btn-primary w-full mt-4 py-2.5 md:py-3 text-[13px] md:text-sm">
+        <span x-show="!loading" class="flex items-center gap-1.5"><i class="fa-solid fa-cloud-arrow-down text-xs"></i> Download Now</span>
+        <span x-show="loading" class="flex items-center gap-1.5"><i class="fa-solid fa-circle-notch anim-spin text-xs"></i> <span x-text="status"></span></span>
+      </button>
+    </div>
+
+    <div id="prg" x-show="loading || pct > 0" x-transition class="mt-5 md:mt-6 pt-5 md:pt-6 sc" style="border-top:1px solid #334155">
+      <div class="flex justify-between items-end mb-2.5">
+        <div>
+          <p class="text-[10px] font-semibold mb-0.5 uppercase tracking-wider flex items-center gap-1.5" style="color:#94A3B8"><i class="fa-solid fa-circle-info text-blue-400 text-[9px]"></i> Status</p>
+          <p class="text-[12px] md:text-sm font-medium text-blue-400" x-text="status"></p>
+        </div>
+        <div class="text-right">
+          <p class="text-[10px] font-semibold mb-0.5 uppercase tracking-wider" style="color:#94A3B8">Progress</p>
+          <p class="text-lg md:text-xl font-bold" x-text="pct + '%'"></p>
+        </div>
+      </div>
+      <div class="h-2 rounded-full overflow-hidden" style="background:#0F172A;border:1px solid #334155">
+        <div class="h-full pb rounded-full" :style="'width:' + pct + '%'"></div>
+      </div>
+      <div x-show="loading" class="flex justify-between text-[10px] mt-2 font-mono" style="color:#94A3B8">
+        <span class="flex items-center gap-1"><i class="fa-solid fa-bolt text-yellow-400 text-[9px]"></i> <span x-text="spd"></span></span>
+        <span class="flex items-center gap-1"><i class="fa-solid fa-hourglass-half text-blue-400 text-[9px]"></i> <span x-text="eta"></span></span>
+      </div>
+      <button x-show="loading" @click="cancel()" class="btn btn-danger w-full mt-2.5 py-2 text-[11px]"><i class="fa-solid fa-xmark text-[10px]"></i> Cancel Download</button>
+    </div>
+  </div>
+
+  <div x-data="rating()" x-init="load()" class="mt-8 md:mt-12 anim-fade-up">
+    <div class="card rounded-2xl p-5 md:p-6" style="box-shadow:0 20px 40px rgba(0,0,0,.3)">
+      <div class="text-center mb-5">
+        <h2 class="text-sm md:text-base font-bold flex items-center justify-center gap-2 mb-1"><i class="fa-solid fa-star text-yellow-400"></i> Rate VideoDL Pro</h2>
+        <p class="text-[10px] md:text-xs" style="color:#94A3B8">Your feedback helps us improve</p>
+      </div>
+      <div class="flex items-center justify-center gap-5 mb-5 flex-wrap">
+        <div class="text-center">
+          <div class="text-4xl md:text-5xl font-extrabold" style="background:linear-gradient(135deg,#fbbf24,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent" x-text="data.average.toFixed(1)">0.0</div>
+          <div class="flex items-center justify-center gap-0.5 mt-1">
+            <template x-for="i in 5" :key="i"><i class="fa-solid fa-star text-xs" :class="i <= Math.round(data.average) ? 'text-yellow-400' : 'text-gray-600'"></i></template>
+          </div>
+          <div class="text-[10px] mt-1" style="color:#94A3B8"><span x-text="data.total"></span> <span x-text="data.total === 1 ? 'vote' : 'votes'"></span></div>
+        </div>
+        <div class="flex-1 min-w-[180px] max-w-[240px] space-y-1">
+          <template x-for="star in [5,4,3,2,1]" :key="star">
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] w-3 text-right" style="color:#94A3B8" x-text="star"></span>
+              <i class="fa-solid fa-star text-[8px] text-yellow-400"></i>
+              <div class="rating-bar flex-1"><div class="rating-bar-fill" :style="'width:' + pct(star) + '%'"></div></div>
+              <span class="text-[10px] w-6 text-right font-mono" style="color:#94A3B8" x-text="data.distribution[star] || 0"></span>
+            </div>
+          </template>
+        </div>
+      </div>
+      <div class="text-center pt-4" style="border-top:1px solid #334155">
+        <p class="text-[11px] mb-2" style="color:#94A3B8" x-show="data.can_vote"><i class="fa-solid fa-hand-pointer text-[10px]"></i> Tap a star to rate</p>
+        <p class="text-[11px] mb-2" style="color:#10b981" x-show="!data.can_vote"><i class="fa-solid fa-circle-check text-[10px]"></i> You rated <span x-text="data.my_vote"></span> star<span x-show="data.my_vote !== 1">s</span>. Thank you!</p>
+        <div class="flex items-center justify-center gap-1 md:gap-2" @mouseleave="hover = 0">
+          <template x-for="star in [1,2,3,4,5]" :key="star">
+            <button @click="!data.can_vote ? null : submit(star)" @mouseenter="!data.can_vote && (hover = star)" :disabled="!data.can_vote" class="star-btn" :class="{'active': (data.can_vote ? (hover >= star || (!hover && data.my_vote >= star)) : (data.my_vote >= star)), 'readonly': !data.can_vote}"><i class="fa-solid fa-star"></i></button>
+          </template>
+        </div>
+        <p x-show="err" class="text-[10px] text-red-400 mt-2" x-text="err"></p>
+      </div>
+    </div>
+  </div>
+
+  <div x-data="fl()" x-init="init()" class="mt-8 md:mt-12 anim-fade-up">
+    <div class="flex justify-between items-center mb-3 md:mb-4">
+      <h2 class="text-[11px] md:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
+        <i class="fa-solid fa-folder-open text-blue-400 text-[10px]"></i> Recent Downloads
+        <span class="text-[9px] px-1.5 py-0.5 rounded-full" style="background:#334155" x-text="files.length"></span>
+      </h2>
+      <button @click="load()" class="text-[10px] font-medium transition flex items-center gap-1" style="color:#94A3B8;background:none;border:none;cursor:pointer" onmouseover="this.style.color='#60a5fa'" onmouseout="this.style.color='#94A3B8'"><i class="fa-solid fa-rotate text-[9px]"></i> Refresh</button>
+    </div>
+    <div x-show="files.length === 0" class="card rounded-xl p-6 text-center text-[11px]" style="color:#94A3B8"><i class="fa-solid fa-inbox text-2xl mb-2 block" style="color:#475569"></i> No files downloaded yet.</div>
+    <div class="grid grid-cols-1 gap-2">
+      <template x-for="(f, idx) in files" :key="f.name">
+        <div class="card rounded-lg p-2.5 flex items-center gap-2.5 transition anim-fade-up" :style="'animation-delay:' + (idx * 0.05) + 's;opacity:0;animation-fill-mode:forwards'">
+          <div class="icon-video"><i class="fa-solid fa-file-video text-[11px]"></i></div>
+          <div class="flex-1 min-w-0">
+            <div class="text-[11px] md:text-xs font-medium truncate-text" x-text="f.name"></div>
+            <div class="text-[9px] md:text-[10px] flex items-center gap-1.5 mt-0.5" style="color:#94A3B8">
+              <i class="fa-solid fa-hard-drive text-[8px]"></i><span x-text="sz(f.size)"></span>
+              <span style="color:#475569">•</span>
+              <i class="fa-regular fa-clock text-[8px]"></i><span x-text="timeAgo(f.mtime)"></span>
+            </div>
+          </div>
+          <div class="flex items-center gap-1 flex-shrink-0">
+            <a :href="f.url" class="btn btn-secondary text-[10px] px-2.5 py-1.5" style="text-decoration:none"><i class="fa-solid fa-download text-[9px]"></i> Save</a>
+            <button @click="del(f.name)" class="btn transition" style="width:1.75rem;height:1.75rem;padding:0;background:transparent;color:#94A3B8;border:1px solid transparent;border-radius:.5rem" onmouseover="this.style.color='#f87171';this.style.background='rgba(239,68,68,.1)'" onmouseout="this.style.color='#94A3B8';this.style.background='transparent'"><i class="fa-solid fa-trash-can text-[10px]"></i></button>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+</main>
+
+<div id="toast" class="toast">
+  <i class="fa-solid fa-circle-check text-green-400"></i>
+  <span id="toast-text">Ready</span>
+</div>
+
+<footer class="mt-auto py-5 text-center text-[10px] card anim-fade" style="border-top:1px solid #334155;color:#94A3B8">
+  <div class="flex items-center justify-center gap-1.5 mb-1.5">
+    <span class="w-1.5 h-1.5 rounded-full bg-green-500 anim-pulse"></span>
+    <span>System Online</span>
+  </div>
+  <p class="font-semibold text-blue-400 mb-1 flex items-center justify-center gap-1.5 text-[11px]"><i class="fa-solid fa-code text-[9px]"></i> Mahedi Hassan Anik</p>
+  <p class="flex items-center justify-center gap-2 flex-wrap text-[10px]">
+    <i class="fa-brands fa-python" style="color:#3776AB"></i>
+    <i class="fa-solid fa-flask" style="color:#4B8BBE"></i>
+    <i class="fa-brands fa-js" style="color:#F7DF1E"></i>
+    <i class="fa-brands fa-css3-alt" style="color:#1572B6"></i>
+  </p>
+</footer>
+
+<script>
+const IS_SECURE = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+if (IS_SECURE) {
+  const sb = document.getElementById('secure-badge');
+  if (sb) sb.style.display = 'inline-flex';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-text').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function dl() {
+  return {
+    url: '', sel: '', loading: false, pct: 0, status: '', spd: '', eta: '', err: '', 
+    fetching: false, info: null, did: null, 
+    thumbFailed: false, thumbLoading: false, currentThumb: '', thumbIndex: 0, thumbList: [],
+    hint: '', hintColor: 'color:#94A3B8', pasteSuccess: false, pasteStatus: '', pasteStatusColor: 'color:#10b981',
+    lastTap: 0, isReading: false,
+
+    reset() { 
+      this.info = null; this.sel = ''; this.err = ''; 
+      this.thumbFailed = false; this.thumbList = []; this.thumbIndex = 0; 
+    },
+
+    onTap() {
+      const now = Date.now();
+      if (now - this.lastTap < 800) return; // debounce rapid taps
+      this.lastTap = now;
+      if (this.url) return; // already has URL
+      this.tryAutoPaste();
+    },
+
+    async tryAutoPaste() {
+      if (this.isReading) return;
+      if (this.url) return;
+      
+      // Check clipboard availability
+      if (!navigator.clipboard || !navigator.clipboard.readText) {
+        this.hint = 'Clipboard not available. Use the paste button.';
+        this.hintColor = 'color:#f59e0b';
+        setTimeout(() => { this.hint = '' }, 4000);
+        return;
+      }
+      
+      // Query permission state
+      try {
+        if (navigator.permissions && navigator.permissions.query) {
+          const perm = await navigator.permissions.query({name: 'clipboard-read'});
+          if (perm.state === 'denied') {
+            this.hint = 'Clipboard permission denied. Enable it in site settings.';
+            this.hintColor = 'color:#ef4444';
+            setTimeout(() => { this.hint = '' }, 5000);
+            return;
+          }
+        }
+      } catch(e) { /* permissions API not supported */ }
+      
+      this.isReading = true;
+      try {
+        const text = await navigator.clipboard.readText();
+        if (!text || !text.trim()) {
+          this.hint = 'Clipboard is empty. Copy a video URL first.';
+          this.hintColor = 'color:#94A3B8';
+          setTimeout(() => { this.hint = '' }, 3000);
+          this.isReading = false;
+          return;
+        }
+        const trimmed = text.trim();
+        if (!/^https?:\/\//i.test(trimmed)) {
+          this.hint = 'Clipboard does not contain a valid URL.';
+          this.hintColor = 'color:#f59e0b';
+          setTimeout(() => { this.hint = '' }, 3000);
+          this.isReading = false;
+          return;
+        }
+        // Success!
+        this.url = trimmed;
+        this.pasteSuccess = true;
+        this.pasteStatus = '✓ Pasted';
+        this.pasteStatusColor = 'color:#10b981';
+        this.hint = 'Auto-pasted! Analyzing...';
+        this.hintColor = 'color:#10b981';
+        showToast('✓ URL auto-pasted');
+        setTimeout(() => { this.pasteSuccess = false; this.pasteStatus = ''; }, 1500);
+        setTimeout(() => { this.hint = ''; }, 2000);
+        this.isReading = false;
+        // Auto-analyze after short delay
+        setTimeout(() => { if (this.url && !this.info) this.fetchInfo(); }, 250);
+      } catch(e) {
+        // Clipboard read failed - likely insecure context
+        if (!IS_SECURE) {
+          this.hint = '⚠️ Auto-paste needs HTTPS. Tap the paste button or use https://';
+          this.hintColor = 'color:#f59e0b';
+        } else {
+          this.hint = 'Could not read clipboard. Try the paste button.';
+          this.hintColor = 'color:#f59e0b';
+        }
+        setTimeout(() => { this.hint = ''; }, 5000);
+        this.isReading = false;
+      }
+    },
+
+    async copyClipboard() {
+      // Manual paste button fallback
+      if (!navigator.clipboard || !navigator.clipboard.readText) {
+        this.$refs.urlInput.focus();
+        showToast('Long-press field to paste');
+        return;
+      }
+      try {
+        const text = await navigator.clipboard.readText();
+        if (!text || !text.trim()) {
+          showToast('Clipboard empty');
+          return;
+        }
+        this.url = text.trim();
+        this.pasteSuccess = true;
+        this.pasteStatus = '✓ Pasted';
+        showToast('✓ Pasted from clipboard');
+        setTimeout(() => { this.pasteSuccess = false; this.pasteStatus = ''; }, 1500);
+        setTimeout(() => { if (this.url && !this.info) this.fetchInfo(); }, 250);
+      } catch(e) {
+        this.$refs.urlInput.focus();
+        showToast('Long-press field to paste');
+      }
+    },
+
+    onPaste(e) { setTimeout(() => { this.fetchInfo() }, 100) },
+
+    loadThumb() {
+      if (!this.info) return;
+      const candidates = [];
+      if (this.info.thumbnail) candidates.push(this.info.thumbnail);
+      if (this.info.thumbnails && Array.isArray(this.info.thumbnails)) {
+        for (const t of this.info.thumbnails) {
+          if (t && !candidates.includes(t)) candidates.push(t);
+        }
+      }
+      this.thumbList = candidates;
+      this.thumbIndex = 0;
+      this.thumbFailed = false;
+      this.thumbLoading = true;
+      this.currentThumb = this.proxyUrl(candidates[0]);
+    },
+    proxyUrl(rawUrl) {
+      if (!rawUrl) return '';
+      return '/thumb?url=' + encodeURIComponent(rawUrl);
+    },
+    tryNextThumb() {
+      this.thumbIndex++;
+      if (this.thumbIndex < this.thumbList.length) {
+        this.currentThumb = this.proxyUrl(this.thumbList[this.thumbIndex]);
+        this.thumbLoading = true;
+      } else {
+        this.thumbFailed = true;
+        this.thumbLoading = false;
+      }
+    },
+
+    fetchInfo() {
+      if (!this.url) return; 
+      this.fetching = true; this.err = ''; this.info = null; this.thumbFailed = false;
+      fetch('/info', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ url: this.url }) })
+        .then(r => r.json()).then(d => {
+          if (d.error) { this.err = d.error } 
+          else {
+            this.info = d;
+            const firstAvailable = d.formats.find(f => !f.downloaded);
+            if (firstAvailable) this.sel = firstAvailable.value;
+            this.$nextTick(() => { 
+              this.loadThumb();
+              document.getElementById('res').scrollIntoView({ behavior: 'smooth', block: 'start' }); 
+            });
+          }
+          this.fetching = false;
+        }).catch(e => { this.err = 'Failed to analyze video.'; this.fetching = false });
+    },
+
+    start() {
+      if (!this.sel) return; this.loading = true; this.pct = 0; this.err = ''; this.status = 'Connecting...'; this.did = Date.now().toString();
+      this.$nextTick(() => { document.getElementById('prg').scrollIntoView({ behavior: 'smooth', block: 'start' }) });
+      const params = new URLSearchParams({ url: this.url, quality: this.sel, id: this.did, vid_id: this.info.video_id || '' });
+      fetch('/download', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: params })
+        .then(r => {
+          const reader = r.body.getReader(); const dec = new TextDecoder();
+          const read = () => reader.read().then(({ done, value }) => {
+            if (done) { this.finish(); return; }
+            dec.decode(value).split('\n').forEach(line => {
+              if (!line.startsWith('data: ')) return;
+              try {
+                const d = JSON.parse(line.slice(6));
+                if (d.line) this.hl(d.line);
+                if (d.done) this.finish();
+                if (d.error) { this.err = d.error; this.loading = false; }
+              } catch (e) {}
+            });
+            read();
+          });
+          read();
+        }).catch(e => { this.err = 'Error: ' + e.message; this.loading = false });
+    },
+    cancel() {
+      if (!this.did) return;
+      fetch('/cancel/' + this.did, { method: 'POST' }).then(() => { this.status = 'Cancelled'; this.loading = false });
+    },
+    hl(l) {
+      const m = l.match(/\[download\]\s+(\d+\.?\d*)%/);
+      if (m) { this.pct = parseFloat(m[1]); this.status = 'Downloading...'; }
+      const sp = l.match(/at\s+([\d\.]+[KMG]iB\/s)/); const et = l.match(/ETA\s+([\d:]+)/);
+      if (sp) this.spd = sp[1]; if (et) this.eta = 'ETA: ' + et[1];
+      if (l.includes('[Merger]')) this.status = 'Merging...';
+      if (l.includes('[ExtractAudio]')) this.status = 'Extracting Audio...';
+    },
+    finish() {
+      if (!this.loading) return;
+      this.loading = false; this.pct = 100; this.status = 'Completed';
+      if (this.info && this.info.formats) {
+        const item = this.info.formats.find(f => f.value === this.sel);
+        if (item) item.downloaded = true;
+        const nextAvail = this.info.formats.find(f => !f.downloaded);
+        this.sel = nextAvail ? nextAvail.value : '';
+      }
+      window.dispatchEvent(new Event('rf'));
+    }
+  }
+}
+
+function rating() {
+  return {
+    data: { average: 0, total: 0, distribution: {1:0,2:0,3:0,4:0,5:0}, my_vote: 0, can_vote: true },
+    hover: 0, err: '',
+    load() { fetch('/rating').then(r => r.json()).then(d => this.data = d).catch(() => {}); },
+    pct(star) {
+      const total = this.data.total || 0;
+      if (total === 0) return 0;
+      return ((this.data.distribution[star] || 0) / total) * 100;
+    },
+    submit(star) {
+      if (!this.data.can_vote) return;
+      fetch('/rating', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ stars: star }) })
+        .then(r => r.json()).then(d => {
+          if (d.ok) {
+            this.data.average = d.average; this.data.total = d.total;
+            this.data.distribution = d.distribution; this.data.my_vote = d.my_vote;
+            this.data.can_vote = false; this.err = '';
+            showToast('Thank you for rating ' + star + ' stars!');
+          } else {
+            this.err = d.error || 'Failed to submit';
+            if (d.my_vote) { this.data.my_vote = d.my_vote; this.data.can_vote = false; }
+          }
+        }).catch(() => { this.err = 'Network error'; });
+    }
+  }
+}
+
+function fl() {
+  return {
+    files: [],
+    load() { fetch('/files').then(r => r.json()).then(d => this.files = d).catch(() => {}) },
+    sz(b) {
+      if (b < 1024) return b + ' B';
+      if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+      if (b < 1073741824) return (b / 1048576).toFixed(1) + ' MB';
+      return (b / 1073741824).toFixed(2) + ' GB';
+    },
+    timeAgo(t) {
+      if (!t) return 'just now';
+      const s = Math.floor(Date.now() / 1000) - t;
+      if (s < 5) return 'just now';
+      if (s < 60) return s + 's ago';
+      if (s < 3600) return Math.floor(s / 60) + 'm ago';
+      if (s < 86400) return Math.floor(s / 3600) + 'h ago';
+      if (s < 604800) return Math.floor(s / 86400) + 'd ago';
+      return Math.floor(s / 604800) + 'w ago';
+    },
+    del(n) {
+      if (!confirm('Delete this file?')) return;
+      fetch('/delete/' + encodeURIComponent(n), { method: 'DELETE' }).then(() => this.load());
+    },
+    init() {
+      this.load();
+      window.addEventListener('rf', () => setTimeout(() => this.load(), 800));
+      setInterval(() => this.load(), 15000);
+      setInterval(() => this.files = [...this.files], 30000);
+    }
+  }
+}
+</script>
+</body>
+</html>
